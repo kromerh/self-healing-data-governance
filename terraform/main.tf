@@ -32,6 +32,7 @@ data "databricks_current_user" "me" {
 
 locals {
   query_sql = file(var.sql_file_path)
+  insert_sql = file(var.insert_sql_file_path)
 }
 
 resource "databricks_notebook" "trigger_github_action" {
@@ -51,6 +52,21 @@ resource "databricks_job" "trigger_github_workflow" {
     }
   }
 }
+
+  
+resource "databricks_query" "insert_into_violation_log" {  
+  warehouse_id = data.databricks_sql_warehouse.sql_endpoint.id  
+  display_name = "Insert UC Privilege Grant Violations into Log"  
+  query_text   = local.insert_sql  
+}  
+  
+# Schedule this query to run periodically  
+resource "databricks_query_schedule" "insert_schedule" {  
+  query_id             = databricks_query.insert_into_violation_log.id  
+  quartz_cron_expression = "0 0/10 * * * ?"  # every 10 minutes  
+  timezone_id          = "Europe/Amsterdam"  
+}  
+
 
 resource "databricks_query" "alert_uc_recent_privilege_grants" {
   warehouse_id = data.databricks_sql_warehouse.sql_endpoint.id

@@ -1,13 +1,11 @@
 import requests  
 import json  
   
-# Configuration  
 GITHUB_OWNER = dbutils.secrets.get("self-healing-governance", "github-owner")
 GITHUB_REPO = dbutils.secrets.get("self-healing-governance", "github-repo")
 GITHUB_TOKEN = dbutils.secrets.get("self-healing-governance", "github-token")
 EVENT_TYPE = "databricks_alert_triggered"  
   
-# Optional: include details about the alert  
 payload = {  
     "event_type": EVENT_TYPE,  
     "client_payload": {  
@@ -17,7 +15,6 @@ payload = {
     }  
 }  
   
-# Make the API request to GitHub  
 url = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/dispatches"  
 headers = {  
     "Accept": "application/vnd.github.v3+json",  
@@ -30,3 +27,4 @@ if response.status_code == 204:
     print("✅ Successfully triggered GitHub Action.")  
 else:  
     print(f"❌ Failed to trigger GitHub Action: {response.status_code} {response.text}")  
+    raise RuntimeError("Failed to trigger GitHub Action")
