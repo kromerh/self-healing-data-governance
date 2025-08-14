@@ -18,11 +18,6 @@ variable "databricks_sql_warehouse_name" {
   type        = string
 }
 
-variable "sql_file_path" {
-  description = "Path to the SQL file containing the query text"
-  type        = string
-}
-
 variable "debug_output" {
   description = "Whether to output the SQL query text for debugging"
   type        = bool
@@ -33,4 +28,9 @@ variable "databricks_notebook_path" {
   description = "Path to the Databricks notebook"
   type        = string
 
+}
+
+variable "insert_sql_file_path" {
+  description = "Path to the SQL file containing the INSERT statement"
+  type        = string
 }

@@ -1,3 +1,3 @@
-output "debug_sql_query" {
-  value = var.debug_output ? local.query_sql : null
+output "debug_insert_sql" {
+  value = var.debug_output ? local.insert_sql : null
 }

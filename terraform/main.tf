@@ -31,86 +31,49 @@ data "databricks_current_user" "me" {
 }
 
 locals {
-  query_sql = file(var.sql_file_path)
   insert_sql = file(var.insert_sql_file_path)
 }
 
-resource "databricks_notebook" "trigger_github_action" {
+resource "databricks_notebook" "check_and_trigger_github" {
   source = var.databricks_notebook_path
-  path   = "${data.databricks_current_user.me.home}/python/trigger_github_action.py"
+  path   = "${data.databricks_current_user.me.home}/python/check_and_trigger_github.py"
 }
 
-resource "databricks_job" "trigger_github_workflow" {
-  name        = "Trigger GitHub Action"
-  description = "Runs a notebook that triggers a GitHub Action via repository_dispatch event"
-
-  task {
-    task_key = "trigger_github_action"
-
-    notebook_task {
-      notebook_path = databricks_notebook.trigger_github_action.path
-    }
-  }
-}
-
-  
-resource "databricks_query" "insert_into_violation_log" {  
-  warehouse_id = data.databricks_sql_warehouse.sql_endpoint.id  
-  display_name = "Insert UC Privilege Grant Violations into Log"  
-  query_text   = local.insert_sql  
-}  
-  
-# Schedule this query to run periodically  
-resource "databricks_query_schedule" "insert_schedule" {  
-  query_id             = databricks_query.insert_into_violation_log.id  
-  quartz_cron_expression = "0 0/10 * * * ?"  # every 10 minutes  
-  timezone_id          = "Europe/Amsterdam"  
-}  
-
-
-resource "databricks_query" "alert_uc_recent_privilege_grants" {
+resource "databricks_query" "insert_into_violation_log" {
   warehouse_id = data.databricks_sql_warehouse.sql_endpoint.id
-  display_name = "alert_uc_recent_privilege_grants"
-  query_text   = local.query_sql
+  display_name = "Insert UC Privilege Grant Violations into Log"
+  query_text   = local.insert_sql
 }
 
-resource "databricks_alert_v2" "basic_alert" {
-  display_name     = "UC Recent Privilege Grants"
-  query_text       = databricks_query.alert_uc_recent_privilege_grants.query_text
-  warehouse_id     = data.databricks_sql_warehouse.sql_endpoint.id
-  parent_path      = "/Workspace/Users/heiko.kromer@ms.d-one.ai"
-  run_as_user_name = "heiko.kromer@ms.d-one.ai"
+resource "databricks_job" "uc_permission_monitor" {
+  name        = "UC Permission Change Monitor"
+  description = "Checks for UC privilege grants and triggers GitHub workflow if found"
 
-  evaluation = {
-    source = {
-      name        = "perm_changes"
-      display     = "Permission Changes"
-      aggregation = "COUNT"
-    }
-    comparison_operator = "GREATER_THAN"
-    threshold = {
-      value = {
-        double_value = 1
+  schedule {
+    quartz_cron_expression = "0 0/10 * * * ?" # every 10 minutes  
+    timezone_id            = "Europe/Amsterdam"
+    pause_status           = "UNPAUSED"
+  }
+
+  # Task 1: Insert violations into log  
+  task {
+    task_key = "insert_into_log"
+    sql_task {
+      warehouse_id = data.databricks_sql_warehouse.sql_endpoint.id
+      query {
+        query_id = databricks_query.insert_into_violation_log.id
       }
     }
-    empty_result_state = "OK"
-
-    notification = {
-      subscriptions = [
-        {
-          user_email  = "heiko.kromer@ms.d-one.ai",
-          workflow_id = databricks_job.trigger_github_workflow.id
-        }
-      ]
-      retrigger_seconds = 10
-      notify_on_ok      = true
-    }
-
   }
 
-  schedule = {
-    quartz_cron_schedule = "0 0/10 * * * ?" # Every Day Every 10 minutes
-    timezone_id          = "Europe/Amsterdam"
-    pause_status         = "UNPAUSED"
+  # Task 2: Check violations and trigger GitHub
+  task {
+    task_key = "check_and_trigger"
+    depends_on {
+      task_key = "insert_into_log"
+    }
+    notebook_task {
+      notebook_path = databricks_notebook.check_and_trigger_github.path
+    }
   }
 }
