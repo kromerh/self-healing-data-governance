@@ -1,0 +1,18 @@
+name: Databricks Alert Triggered  
+  
+on:  
+  repository_dispatch:  
+    types: [databricks_alert_triggered]  # Must match the event_type you send from Databricks  
+  
+jobs:  
+  hello_world:  
+    runs-on: ubuntu-latest  
+    steps:  
+      - name: Print Hello World  
+        run: echo "Hello World from GitHub Actions!"  
+  
+      - name: Show event payload  
+        run: |  
+          echo "Event Type: ${{ github.event.action }}"  
+          echo "Client Payload:"  
+          echo "${{ toJson(github.event.client_payload) }}"  
