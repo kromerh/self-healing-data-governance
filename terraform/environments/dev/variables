@@ -1,0 +1,14 @@
+provider_azurerm = {
+  subscription_id = ""
+  tenant_id       = ""
+}
+
+provider_databricks_workspace = {
+  host = "https://adb-..azuredatabricks.net/"
+}
+
+debug_output                  = true
+insert_sql_file_path          = ""
+databricks_sql_warehouse_name = ""
+
+databricks_notebook_path = ""
