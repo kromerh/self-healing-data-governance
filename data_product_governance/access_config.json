@@ -1,0 +1,99 @@
+{
+    "HKR-Data-Management-DEV-Data-Viewer": {
+        "role_description": "Data Viewer Access",
+        "access_control_list": [
+            {
+                "object_type": "catalog",
+                "object_name": "data_access_management_dev",
+                "access_rights": [
+                    "USE_CATALOG",
+                    "BROWSE",
+                    "EXECUTE"
+                ]
+            },
+            {
+                "object_type": "schema",
+                "object_name": "data_access_management_dev.finance",
+                "access_rights": [
+                    "USE_SCHEMA"
+                ]
+            },
+            {
+                "object_type": "table",
+                "object_name": "data_access_management_dev.finance.invoice",
+                "access_rights": [
+                    "SELECT"
+                ]
+            }
+        ]
+    },
+    "HKR-Data-Management-DEV-Internal-Data-Viewer": {
+        "role_description": "Internal Data Viewer Access",
+        "access_control_list": [
+            {
+                "object_type": "catalog",
+                "object_name": "data_access_management_dev",
+                "access_rights": [
+                    "USE_CATALOG",
+                    "BROWSE",
+                    "EXECUTE"
+                ]
+            },
+            {
+                "object_type": "schema",
+                "object_name": "data_access_management_dev.finance",
+                "access_rights": [
+                    "USE_SCHEMA"
+                ]
+            },
+            {
+                "object_type": "table",
+                "object_name": "data_access_management_dev.finance.invoice",
+                "access_rights": [
+                    "SELECT"
+                ]
+            }
+        ]
+    },
+    "HKR-Data-Management-DEV-Data-Editor": {
+        "role_description": "Data Editor Access",
+        "access_control_list": [
+            {
+                "object_type": "catalog",
+                "object_name": "data_access_management_dev",
+                "access_rights": [
+                    "USE_CATALOG",
+                    "USE_SCHEMA",
+                    "APPLY TAG",
+                    "BROWSE",
+                    "READ VOLUME",
+                    "SELECT",
+                    "EXECUTE",
+                    "MODIFY",
+                    "REFRESH",
+                    "WRITE_VOLUME",
+                    "CREATE_FUNCTION",
+                    "CREATE_MATERIALIZED_VIEW",
+                    "CREATE_MODEL",
+                    "CREATE_MODEL_VERSION",
+                    "CREATE_TABLE",
+                    "CREATE_VOLUME"
+                ]
+            }
+        ]
+    },
+    "HKR-Data-Management-DEV-Data-Manager": {
+        "role_description": "Data Manager Access",
+        "access_control_list": [
+            {
+                "object_type": "catalog",
+                "object_name": "data_access_management_dev",
+                "access_rights": [
+                    "USE_CATALOG",
+                    "MANAGE",
+                    "BROWSE"
+                ]
+            }
+        ]
+    }
+}
