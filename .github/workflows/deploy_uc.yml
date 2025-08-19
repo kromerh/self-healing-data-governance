@@ -1,0 +1,58 @@
+name: Databricks Alert Triggered
+
+on:
+  repository_dispatch:
+    types: [databricks_alert_triggered] # Must match the event_type sent from Databricks 
+
+jobs:
+  deploy_uc:
+    runs-on: ubuntu-latest
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      TF_WORKING_DIR: "data_product_governance/terraform"
+
+    steps:
+      - name: Show event payload
+        run: |
+          echo "Event Type: ${{ github.event.action }}"
+          echo "Client Payload:"
+          echo "${{ toJson(github.event.client_payload) }}"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.12.2
+
+      - name: Terraform Init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=${{ secrets.STATE_BACKEND_RESOURCE_GROUP_NAME }}" \
+            -backend-config="storage_account_name=${{ secrets.STATE_BACKEND_STORAGE_ACCOUNT_NAME }}" \
+            -backend-config="container_name=${{ secrets.STATE_BACKEND_CONTAINER_NAME }}" \
+            -backend-config="key=${{ secrets.STATE_BACKEND_KEY }}" \
+            -upgrade
+
+      - name: Terraform Format
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform fmt -check
+        continue-on-error: false
+
+      - name: Terraform Validate
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform plan -var="databricks_workspace_url=${{ env.DATABRICKS_HOST }}"
+
+      - name: Terraform Apply
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform apply -var="databricks_workspace_url=${{ env.DATABRICKS_HOST }}" -auto-approve
