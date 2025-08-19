@@ -1,11 +1,8 @@
 name: Databricks Alert Triggered
 
 on:
-  # repository_dispatch:
-  #   types: [databricks_alert_triggered] # Must match the event_type sent from Databricks 
-  push:
-    branches:
-      - main
+  repository_dispatch:
+    types: [databricks_alert_triggered] # Must match the event_type sent from Databricks 
 
 jobs:
   deploy_uc:

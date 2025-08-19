@@ -90,8 +90,7 @@
                 "object_name": "data_access_management_dev",
                 "access_rights": [
                     "USE_CATALOG",
-                    "MANAGE",
-                    "BROWSE"
+                    "MANAGE"
                 ]
             }
         ]
