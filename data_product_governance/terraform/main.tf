@@ -16,7 +16,7 @@ provider "databricks" {
 }
 
 locals {
-  access_config = jsondecode(file(".../access_config.json"))
+  access_config = jsondecode(file("../access_config.json"))
 
   all_grants = flatten([
     for role_name, role_data in local.access_config : [
